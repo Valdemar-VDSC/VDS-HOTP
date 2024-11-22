@@ -1,0 +1,528 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RBProject version="2024r4" FormatVersion="2" MinIDEVersion="20210300">
+<block type="Module" ID="969838591">
+ <ObjName>VDSHOTPAuth</ObjName>
+ <ObjContainerID>0</ObjContainerID>
+ <IsClass>1</IsClass>
+ <ItemFlags>1</ItemFlags>
+ <IsInterface>0</IsInterface>
+ <Compatibility></Compatibility>
+ <Method>
+  <ItemName>base32_decode</ItemName>
+  <Compatibility></Compatibility>
+  <Visible>1</Visible>
+  <PartID>371558399</PartID>
+  <ItemSource>
+   <TextEncoding>134217984</TextEncoding>
+   <SourceLine>Function base32_decode(b32 as String) As String</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>// Info from</SourceLine>
+   <SourceLine>// http://en.wikipedia.org/wiki/Base32</SourceLine>
+   <SourceLine>// https://devcentral.f5.com/Tutorials/TechTips/tabid/63/articleType/ArticleView/articleId/1086513/Base32-Encoding-and-Decoding-With-iRules.aspx</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>// The lookup string for the base32 alphabet</SourceLine>
+   <SourceLine>//const lut = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567"</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>Var l as integer = b32.Length</SourceLine>
+   <SourceLine>Var n as UInt16 = 0</SourceLine>
+   <SourceLine>Var j as integer = 0</SourceLine>
+   <SourceLine>Var binary as String = ""</SourceLine>
+   <SourceLine>b32 = b32.Uppercase</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>for i as integer = 0 to l</SourceLine>
+   <SourceLine>Var c as String = b32.Middle(i, 1)</SourceLine>
+   <SourceLine>if c &lt;&gt; "=" then // Padding</SourceLine>
+   <SourceLine>n = Bitwise.ShiftLeft(n, 5)</SourceLine>
+   <SourceLine>Var t as integer = base32_chars.IndexOf(c)</SourceLine>
+   <SourceLine>n = n + t</SourceLine>
+   <SourceLine>j = j + 5</SourceLine>
+   <SourceLine>if j &gt;= 8 then // We have a character - push it to the result</SourceLine>
+   <SourceLine>j = j - 8</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>var a1,a2,a3 As Integer</SourceLine>
+   <SourceLine>var a4 As String</SourceLine>
+   <SourceLine>a1 = Bitwise.ShiftLeft(&amp;hFF, j)</SourceLine>
+   <SourceLine>a2 = Bitwise.BitAnd(n, a1)</SourceLine>
+   <SourceLine>a3 = Bitwise.ShiftRight(a2, j)</SourceLine>
+   <SourceLine>a4 = String.ChrByte(a3)</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>binary = binary + a4</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>end if</SourceLine>
+   <SourceLine>end if</SourceLine>
+   <SourceLine>next</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>return binary</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>End Function</SourceLine>
+  </ItemSource>
+  <TextEncoding>134217984</TextEncoding>
+  <AliasName></AliasName>
+  <ItemFlags>0</ItemFlags>
+  <IsShared>0</IsShared>
+  <ItemParams>b32 as String</ItemParams>
+  <ItemResult>String</ItemResult>
+ </Method>
+ <Method>
+  <ItemName>generate_secret_key</ItemName>
+  <Compatibility></Compatibility>
+  <Visible>1</Visible>
+  <PartID>1085509631</PartID>
+  <ItemSource>
+   <TextEncoding>134217984</TextEncoding>
+   <SourceLine>Function generate_secret_key(length as Integer = 16) As string</SourceLine>
+   <SourceLine>Var res as String = ""</SourceLine>
+   <SourceLine>Var uuid as String = GenerateUUID</SourceLine>
+   <SourceLine>Var r as new Random</SourceLine>
+   <SourceLine>var seed As String = "&amp;h" + uuid.Middle(1, 8)</SourceLine>
+   <SourceLine>Var seed_value as Double = seed.Val</SourceLine>
+   <SourceLine>const chars As String = "234567QWERTYUIOPASDFGHJKLZXCVBNM"</SourceLine>
+   <SourceLine>r.Seed = seed_value</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>for i as integer = 1 to length</SourceLine>
+   <SourceLine>res = res + chars.Middle( r.InRange(1, chars.Length), 1)</SourceLine>
+   <SourceLine>next</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>return res</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>End Function</SourceLine>
+  </ItemSource>
+  <TextEncoding>134217984</TextEncoding>
+  <AliasName></AliasName>
+  <ItemFlags>0</ItemFlags>
+  <IsShared>0</IsShared>
+  <ItemParams>length as Integer = 16</ItemParams>
+  <ItemResult>string</ItemResult>
+ </Method>
+ <Method>
+  <ItemName>get_timestamp</ItemName>
+  <Compatibility></Compatibility>
+  <Visible>1</Visible>
+  <PartID>2005721087</PartID>
+  <ItemSource>
+   <TextEncoding>134217984</TextEncoding>
+   <SourceLine>Function get_timestamp() As integer</SourceLine>
+   <SourceLine>// Var d as new Date</SourceLine>
+   <SourceLine>// Var epoch_start as new Date</SourceLine>
+   <SourceLine>// </SourceLine>
+   <SourceLine>// // We should work in GMT and use the UNIX epoch</SourceLine>
+   <SourceLine>// d.GMTOffset = 0.0</SourceLine>
+   <SourceLine>// epoch_start.GMTOffset = 0.0</SourceLine>
+   <SourceLine>// epoch_start.SQLDateTime = "1970-01-01 00:00:00"</SourceLine>
+   <SourceLine>// </SourceLine>
+   <SourceLine>// return Floor((d.TotalSeconds - epoch_start.TotalSeconds) / me.keyRegeneration)</SourceLine>
+   <SourceLine>// </SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>Var d as DateTime = DateTime.Now(new TimeZone("GMT"))</SourceLine>
+   <SourceLine>Var epoch_start as new DateTime(1970,1,1,0,0,0,0, New TimeZone("GMT"))</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>// // We should work in GMT and use the UNIX epoch</SourceLine>
+   <SourceLine>// epoch_start.Year = 1970</SourceLine>
+   <SourceLine>// epoch_start.Month = 01</SourceLine>
+   <SourceLine>// epoch_start.Day = 01</SourceLine>
+   <SourceLine>// epoch_start.Hour = 00</SourceLine>
+   <SourceLine>// epoch_start.Minute = 00</SourceLine>
+   <SourceLine>// epoch_start.Second = 00</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>return Floor((d.SecondsSince1904KSW - epoch_start.SecondsSince1904KSW) / me.keyRegeneration)</SourceLine>
+   <SourceLine>End Function</SourceLine>
+  </ItemSource>
+  <TextEncoding>134217984</TextEncoding>
+  <AliasName></AliasName>
+  <ItemFlags>0</ItemFlags>
+  <IsShared>0</IsShared>
+  <ItemParams></ItemParams>
+  <ItemResult>integer</ItemResult>
+ </Method>
+ <Method>
+  <ItemName>oath_hotp</ItemName>
+  <Compatibility></Compatibility>
+  <Visible>1</Visible>
+  <PartID>1520439295</PartID>
+  <ItemSource>
+   <TextEncoding>134217984</TextEncoding>
+   <SourceLine>Function oath_hotp(key as String, counter as UInt32) As String</SourceLine>
+   <SourceLine>Var hash as String</SourceLine>
+   <SourceLine>Var bin_counter as MemoryBlock</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>if key.Length &lt; 8 then</SourceLine>
+   <SourceLine>Var e as new RuntimeException</SourceLine>
+   <SourceLine>e.Message = "Secret key is too short. Must be at least 16 base 32 charcters"</SourceLine>
+   <SourceLine>Raise e</SourceLine>
+   <SourceLine>end if</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>// Create a MemoryBlock that will hold the counter</SourceLine>
+   <SourceLine>// Should be 64 bits in BigEndian order</SourceLine>
+   <SourceLine>bin_counter = new MemoryBlock(8)</SourceLine>
+   <SourceLine>bin_counter.LittleEndian = false</SourceLine>
+   <SourceLine>bin_counter.UInt32Value(4) = counter</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>hash = Crypto.HMAC(key, bin_counter, Crypto.HashAlgorithms.SHA1)</SourceLine>
+   <SourceLine>Return me.oath_truncate(hash).ToString("000000")</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>End Function</SourceLine>
+  </ItemSource>
+  <TextEncoding>134217984</TextEncoding>
+  <AliasName></AliasName>
+  <ItemFlags>0</ItemFlags>
+  <IsShared>0</IsShared>
+  <ItemParams>key as String, counter as UInt32</ItemParams>
+  <ItemResult>String</ItemResult>
+ </Method>
+ <Method>
+  <ItemName>oath_truncate</ItemName>
+  <Compatibility></Compatibility>
+  <Visible>1</Visible>
+  <PartID>1209073663</PartID>
+  <ItemSource>
+   <TextEncoding>134217984</TextEncoding>
+   <SourceLine>Function oath_truncate(hash as String) As Integer</SourceLine>
+   <SourceLine>Var offset as Integer</SourceLine>
+   <SourceLine>Var result as UInt64</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>// A SHA1 HMAC is 20 bytes long</SourceLine>
+   <SourceLine>// Assign to a MemoryBlock for simplicity</SourceLine>
+   <SourceLine>Var mb as new MemoryBlock(20)</SourceLine>
+   <SourceLine>mb.StringValue(0, hash.Length) = hash</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>// The offset is indicated in the low 4 bits (nibble) of byte 20</SourceLine>
+   <SourceLine>offset = Bitwise.BitAnd(mb.UInt8Value(19), &amp;h0F)</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>// Get the 32-bit value (with highest bit cleared) from the hash</SourceLine>
+   <SourceLine>result = Bitwise.BitOr( _</SourceLine>
+   <SourceLine>Bitwise.ShiftLeft(Bitwise.BitAnd(mb.UInt8Value(offset), &amp;h7F), 24), _</SourceLine>
+   <SourceLine>Bitwise.ShiftLeft(Bitwise.BitAnd(mb.UInt8Value(offset+1), &amp;hFF), 16), _</SourceLine>
+   <SourceLine>Bitwise.ShiftLeft(Bitwise.BitAnd(mb.UInt8Value(offset+2), &amp;hFF), 8), _</SourceLine>
+   <SourceLine>Bitwise.BitAnd(mb.UInt8Value(offset+3), &amp;hFF) _</SourceLine>
+   <SourceLine>)</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>// Do a mod with the length of the OTP to get the expected value</SourceLine>
+   <SourceLine>return result mod 10^me.otpLength</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>End Function</SourceLine>
+  </ItemSource>
+  <TextEncoding>134217984</TextEncoding>
+  <AliasName></AliasName>
+  <ItemFlags>0</ItemFlags>
+  <IsShared>0</IsShared>
+  <ItemParams>hash as String</ItemParams>
+  <ItemResult>Integer</ItemResult>
+ </Method>
+ <Method>
+  <ItemName>verify_key</ItemName>
+  <Compatibility></Compatibility>
+  <Visible>1</Visible>
+  <PartID>701036543</PartID>
+  <ItemSource>
+   <TextEncoding>134217984</TextEncoding>
+   <SourceLine>Function verify_key(b32seed as String, key as Integer, timeStamp as Integer, delta as Integer = 4) As Boolean</SourceLine>
+   <SourceLine>// Convert the shared key and use as seed value</SourceLine>
+   <SourceLine>Var sharedSecret as String = me.base32_decode(b32seed)</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>// Check a window of codes to allow for clocks to skew</SourceLine>
+   <SourceLine>for ts as Integer = timeStamp - delta to timeStamp + delta</SourceLine>
+   <SourceLine>// Calculate the expected code using the HOTP algroithm</SourceLine>
+   <SourceLine>if key.ToString("000000") = me.oath_hotp(sharedSecret, ts) then</SourceLine>
+   <SourceLine>return true</SourceLine>
+   <SourceLine>end if</SourceLine>
+   <SourceLine>next</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>return false</SourceLine>
+   <SourceLine>End Function</SourceLine>
+  </ItemSource>
+  <TextEncoding>134217984</TextEncoding>
+  <AliasName></AliasName>
+  <ItemFlags>0</ItemFlags>
+  <IsShared>0</IsShared>
+  <ItemParams>b32seed as String, key as Integer, timeStamp as Integer, delta as Integer = 4</ItemParams>
+  <ItemResult>Boolean</ItemResult>
+ </Method>
+ <Method>
+  <ItemName>ValidateUUID</ItemName>
+  <Compatibility></Compatibility>
+  <Visible>1</Visible>
+  <PartID>467173375</PartID>
+  <ItemSource>
+   <TextEncoding>134217984</TextEncoding>
+   <SourceLine>Function ValidateUUID(s As String) As Boolean</SourceLine>
+   <SourceLine>// Validates a RFC-4122 random UUID like the ones generated by</SourceLine>
+   <SourceLine>// GenerateUUID</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>static rxValidator as RegEx</SourceLine>
+   <SourceLine>if rxValidator is nil then</SourceLine>
+   <SourceLine>rxValidator = new RegEx</SourceLine>
+   <SourceLine>rxValidator.SearchPattern = "(?mi-Us)\\A[[:xdigit:]]{8}-[[:xdigit:]]{4}-4[[:xdigit:]]{3}-[89AB][[:xdigit:]]{3}-[[:xdigit:]]{12}\\z"</SourceLine>
+   <SourceLine>end if</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>return rxValidator.Search(s) IsA RegExMatch</SourceLine>
+   <SourceLine>End Function</SourceLine>
+  </ItemSource>
+  <TextEncoding>134217984</TextEncoding>
+  <AliasName></AliasName>
+  <ItemFlags>1</ItemFlags>
+  <IsShared>0</IsShared>
+  <ItemParams>s As String</ItemParams>
+  <ItemResult>Boolean</ItemResult>
+ </Method>
+ <Method>
+  <ItemName>GenerateUUID</ItemName>
+  <Compatibility></Compatibility>
+  <Visible>1</Visible>
+  <PartID>1759432703</PartID>
+  <ItemSource>
+   <TextEncoding>134217984</TextEncoding>
+   <SourceLine>Function GenerateUUID() As String</SourceLine>
+   <SourceLine>// Tries to use declares to let the native system functions handle this.</SourceLine>
+   <SourceLine>// Otherwise, falls back to manual creation.</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>Var result as string</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>Var useDeclares as boolean = true</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>try</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>#if TargetCocoa</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>soft declare function NSClassFromString lib "Cocoa" ( clsName as CFStringRef ) as Ptr</SourceLine>
+   <SourceLine>soft declare function UUID lib "Cocoa" selector "UUID" ( clsRef as Ptr ) as Ptr</SourceLine>
+   <SourceLine>soft declare function UUIDString lib "Cocoa" selector "UUIDString" ( obj_id as Ptr ) as CFStringRef</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>Var classPtr as Ptr = NSClassFromString( "NSUUID" ) </SourceLine>
+   <SourceLine>if classPtr = nil then</SourceLine>
+   <SourceLine>useDeclares = false</SourceLine>
+   <SourceLine>else</SourceLine>
+   <SourceLine>Var NSUUID as ptr = UUID( classPtr )</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>result = UUIDString( NSUUID )</SourceLine>
+   <SourceLine>end if</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>#elseif TargetWin32</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>const kLibName = "rpcrt4"</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>if not System.IsFunctionAvailable( "UuidCreate", kLibName ) then</SourceLine>
+   <SourceLine>useDeclares = false</SourceLine>
+   <SourceLine>elseif not System.IsFunctionAvailable( "UuidToStringA", kLibName ) then</SourceLine>
+   <SourceLine>useDeclares = false</SourceLine>
+   <SourceLine>else</SourceLine>
+   <SourceLine>soft declare function UUIDCreate lib kLibName alias "UuidCreate" ( ByRef uuid as WindowsUUID ) as Integer</SourceLine>
+   <SourceLine>soft declare function UUIDToString lib kLibName alias "UuidToStringA" ( ByRef inUUID as WindowsUUID, ByRef outString as CString ) As Integer</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>Var uuid as WindowsUUID</SourceLine>
+   <SourceLine>if UUIDCreate( uuid ) &lt;&gt; 0 then</SourceLine>
+   <SourceLine>useDeclares = false</SourceLine>
+   <SourceLine>else</SourceLine>
+   <SourceLine>Var out as CString</SourceLine>
+   <SourceLine>if UUIDToString( uuid, out ) &lt;&gt; 0 then</SourceLine>
+   <SourceLine>useDeclares = false</SourceLine>
+   <SourceLine>else</SourceLine>
+   <SourceLine>result = out</SourceLine>
+   <SourceLine>result = result.DefineEncoding( Encodings.UTF8 )</SourceLine>
+   <SourceLine>result = result.Uppercase</SourceLine>
+   <SourceLine>end if</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>end if</SourceLine>
+   <SourceLine>end if</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>#elseif TargetLinux</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>const kLibName = "uuid"</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>if not System.IsFunctionAvailable( "uuid_generate", kLibName ) then</SourceLine>
+   <SourceLine>useDeclares = false</SourceLine>
+   <SourceLine>elseif not System.IsFunctionAvailable( "uuid_unparse_upper", kLibName ) then</SourceLine>
+   <SourceLine>useDeclares = false</SourceLine>
+   <SourceLine>else</SourceLine>
+   <SourceLine>soft declare sub UUIDGenerate lib kLibName alias "uuid_generate" ( ByRef uuid as LinuxUUID )</SourceLine>
+   <SourceLine>soft declare sub UUIDUnparse lib kLibName alias "uuid_unparse_upper" ( ByRef uuid As LinuxUUID, ByRef out As LinuxUUIDString )</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>Var uuid as LinuxUUID</SourceLine>
+   <SourceLine>UUIDGenerate( uuid )</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>Var out as LinuxUUIDString</SourceLine>
+   <SourceLine>UUIDUnparse( uuid, out )</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>result = out.Data</SourceLine>
+   <SourceLine>result = result.DefineEncoding( Encodings.UTF8 )</SourceLine>
+   <SourceLine>end if</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>#endif</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>catch err as RuntimeException</SourceLine>
+   <SourceLine>useDeclares = false</SourceLine>
+   <SourceLine>if err IsA EndException or err IsA ThreadEndException then</SourceLine>
+   <SourceLine>raise err</SourceLine>
+   <SourceLine>end if</SourceLine>
+   <SourceLine>end try</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>if not useDeclares then</SourceLine>
+   <SourceLine>//</SourceLine>
+   <SourceLine>// Fallback to manual creation</SourceLine>
+   <SourceLine>//</SourceLine>
+   <SourceLine>// From http://www.cryptosys.net/pki/uuid-rfc4122.html</SourceLine>
+   <SourceLine>//</SourceLine>
+   <SourceLine>// Generate 16 random bytes (=128 bits)</SourceLine>
+   <SourceLine>// Adjust certain bits according to RFC 4122 section 4.4 as follows:</SourceLine>
+   <SourceLine>// set the four most significant bits of the 7th byte to 0100'B, so the high nibble is '4'</SourceLine>
+   <SourceLine>// set the two most significant bits of the 9th byte to 10'B, so the high nibble will be one of '8', '9', 'A', or 'B'.</SourceLine>
+   <SourceLine>// Convert the adjusted bytes to 32 hexadecimal digits</SourceLine>
+   <SourceLine>// Add four hyphen '-' characters to obtain blocks of 8, 4, 4, 4 and 12 hex digits</SourceLine>
+   <SourceLine>// Output the resulting 36-character string "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"</SourceLine>
+   <SourceLine>//</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>#pragma BackgroundTasks False</SourceLine>
+   <SourceLine>#pragma BoundsChecking False</SourceLine>
+   <SourceLine>#pragma NilObjectChecking False</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>Var randomBytes as MemoryBlock = Crypto.GenerateRandomBytes( 16 )</SourceLine>
+   <SourceLine>randomBytes.LittleEndian = false</SourceLine>
+   <SourceLine>Var p as Ptr = randomBytes</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>//</SourceLine>
+   <SourceLine>// Adjust seventh byte</SourceLine>
+   <SourceLine>//</SourceLine>
+   <SourceLine>Var value as byte = p.Byte( 6 )</SourceLine>
+   <SourceLine>value = value and CType( &amp;b00001111, Byte ) // Turn off the first four bits</SourceLine>
+   <SourceLine>value = value or CType( &amp;b01000000, Byte ) // Turn on the second bit</SourceLine>
+   <SourceLine>p.Byte(6) = value</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>//</SourceLine>
+   <SourceLine>// Adjust ninth byte</SourceLine>
+   <SourceLine>//</SourceLine>
+   <SourceLine>value = p.Byte( 8 )</SourceLine>
+   <SourceLine>value = value and CType( &amp;b00111111, Byte ) // Turn off the first two bits</SourceLine>
+   <SourceLine>value = value or CType( &amp;b10000000, Byte ) // Turn on the first bit</SourceLine>
+   <SourceLine>p.Byte( 8 ) = value</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>result = EncodeHex( randomBytes )</SourceLine>
+   <SourceLine>result = result.LeftBytes( 8 ) + "-" + result.MiddleBytes( 9, 4 ) + "-" + result.MiddleBytes( 13, 4 ) + "-" + result.MiddleBytes( 17, 4 ) + _</SourceLine>
+   <SourceLine>"-" + result.RightBytes( 12 )</SourceLine>
+   <SourceLine>end if</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>return result</SourceLine>
+   <SourceLine></SourceLine>
+   <SourceLine>End Function</SourceLine>
+  </ItemSource>
+  <TextEncoding>134217984</TextEncoding>
+  <AliasName></AliasName>
+  <ItemFlags>1</ItemFlags>
+  <IsShared>0</IsShared>
+  <ItemParams></ItemParams>
+  <ItemResult>String</ItemResult>
+ </Method>
+ <ViewBehavior>
+  <ViewProperty>
+   <ObjName>Index</ObjName>
+   <Visible>1</Visible>
+   <PropertyGroup>ID</PropertyGroup>
+   <PropertyValue>-2147483648</PropertyValue>
+   <ItemType>Integer</ItemType>
+  </ViewProperty>
+  <ViewProperty>
+   <ObjName>Left</ObjName>
+   <Visible>1</Visible>
+   <PropertyGroup>Position</PropertyGroup>
+   <PropertyValue>0</PropertyValue>
+   <ItemType>Integer</ItemType>
+  </ViewProperty>
+  <ViewProperty>
+   <ObjName>Name</ObjName>
+   <Visible>1</Visible>
+   <PropertyGroup>ID</PropertyGroup>
+   <ItemType>String</ItemType>
+  </ViewProperty>
+  <ViewProperty>
+   <ObjName>Super</ObjName>
+   <Visible>1</Visible>
+   <PropertyGroup>ID</PropertyGroup>
+   <ItemType>String</ItemType>
+  </ViewProperty>
+  <ViewProperty>
+   <ObjName>Top</ObjName>
+   <Visible>1</Visible>
+   <PropertyGroup>Position</PropertyGroup>
+   <PropertyValue>0</PropertyValue>
+   <ItemType>Integer</ItemType>
+  </ViewProperty>
+ </ViewBehavior>
+ <Constant>
+  <ItemName>base32_chars</ItemName>
+  <Compatibility></Compatibility>
+  <Visible>1</Visible>
+  <PartID>952827903</PartID>
+  <TextEncoding>134217984</TextEncoding>
+  <ItemType>0</ItemType>
+  <ItemDef>ABCDEFGHIJKLMNOPQRSTUVWXYZ234567</ItemDef>
+  <ItemFlags>0</ItemFlags>
+ </Constant>
+ <Constant>
+  <ItemName>keyRegeneration</ItemName>
+  <Compatibility></Compatibility>
+  <Visible>1</Visible>
+  <PartID>1996716031</PartID>
+  <TextEncoding>134217984</TextEncoding>
+  <ItemType>2</ItemType>
+  <ItemDef>30</ItemDef>
+  <ItemFlags>0</ItemFlags>
+ </Constant>
+ <Constant>
+  <ItemName>otpLength</ItemName>
+  <Compatibility></Compatibility>
+  <Visible>1</Visible>
+  <PartID>2143608831</PartID>
+  <TextEncoding>134217984</TextEncoding>
+  <ItemType>2</ItemType>
+  <ItemDef>6</ItemDef>
+  <ItemFlags>0</ItemFlags>
+ </Constant>
+ <Structure>
+  <TextEncoding>134217984</TextEncoding>
+  <ItemName>LinuxUIDString</ItemName>
+  <ItemFlags>0</ItemFlags>
+  <ItemName>LinuxUIDString</ItemName>
+  <Compatibility></Compatibility>
+  <Visible>1</Visible>
+  <PartID>565579775</PartID>
+  <ItemSource>
+   <TextEncoding>134217984</TextEncoding>
+   <SourceLine>Data As String * 36</SourceLine>
+   <SourceLine>TrailingNull As String * 1</SourceLine>
+  </ItemSource>
+ </Structure>
+ <Structure>
+  <TextEncoding>134217984</TextEncoding>
+  <ItemName>LinuxUUID</ItemName>
+  <ItemFlags>0</ItemFlags>
+  <ItemName>LinuxUUID</ItemName>
+  <Compatibility></Compatibility>
+  <Visible>1</Visible>
+  <PartID>1134741503</PartID>
+  <ItemSource>
+   <TextEncoding>134217984</TextEncoding>
+   <SourceLine>Bytes1 As String * 4</SourceLine>
+   <SourceLine>Bytes2 As String * 2</SourceLine>
+   <SourceLine>Bytes3 As String * 2</SourceLine>
+   <SourceLine>Bytes4 As String * 2</SourceLine>
+   <SourceLine>Bytes5 As String * 6</SourceLine>
+  </ItemSource>
+ </Structure>
+ <Structure>
+  <TextEncoding>134217984</TextEncoding>
+  <ItemName>WindowsUUID</ItemName>
+  <ItemFlags>0</ItemFlags>
+  <ItemName>WindowsUUID</ItemName>
+  <Compatibility></Compatibility>
+  <Visible>1</Visible>
+  <PartID>2045169663</PartID>
+  <ItemSource>
+   <TextEncoding>134217984</TextEncoding>
+   <SourceLine>Data1 As UInt32</SourceLine>
+   <SourceLine>Data2 As UInt16</SourceLine>
+   <SourceLine>Data3 As UInt16</SourceLine>
+   <SourceLine>Data4 As String * 8</SourceLine>
+  </ItemSource>
+ </Structure>
+</block>
+</RBProject>

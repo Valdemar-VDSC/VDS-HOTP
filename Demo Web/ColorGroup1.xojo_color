@@ -1,0 +1,9 @@
+#tag ColorGroup
+	CodeName=ColorGroup1
+	#tag Color
+		Type=1
+		Platform=3
+		Light=00000000
+		Dark=FFFFFF00
+	#tag EndColor
+#tag EndColorGroup
